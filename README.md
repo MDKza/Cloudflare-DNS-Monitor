@@ -14,13 +14,16 @@ This script monitors the reachability of IP addresses associated with Cloudflare
 
 ## Requirements
 - Python 3.x
-- `requests` module
+- Required Python modules:
+  ```bash
+  pip install requests json logging subprocess
+  ```
 - Cloudflare API credentials
 
 ## Installation
 ### **1. Install Dependencies**
 ```bash
-pip install requests
+pip install requests json logging subprocess
 ```
 
 ### **2. Set Up `config.json`**
@@ -44,8 +47,14 @@ Create a `config.json` file in the same directory as the script and populate it 
     },
     "dns_entries": {
         "test.example.com": {
-            "a.a.a.a": ["4.2.2.1", "76.76.2.0", "9.9.9.9", "208.67.222.222"],
-            "b.b.b.b": ["4.2.2.2", "76.76.10.0", "149.112.112.112", "208.67.220.220"]
+            "a.a.a.a": {
+                "ping_targets": ["4.2.2.1", "76.76.2.0", "9.9.9.9", "208.67.222.222"],
+                "comment": "Primary server for test.example.com"
+            },
+            "b.b.b.b": {
+                "ping_targets": ["4.2.2.2", "76.76.10.0", "149.112.112.112", "208.67.220.220"],
+                "comment": "Backup server for test.example.com"
+            }
         }
     }
 }
@@ -79,58 +88,28 @@ This section defines which DNS entries should be monitored and which IPs they sh
 ```json
 "dns_entries": {
     "test.example.com": {
-        "a.a.a.a": ["4.2.2.1", "76.76.2.0", "9.9.9.9", "208.67.222.222"],
-        "b.b.b.b": ["4.2.2.2", "76.76.10.0", "149.112.112.112", "208.67.220.220"]
+        "a.a.a.a": {
+            "ping_targets": ["4.2.2.1", "76.76.2.0", "9.9.9.9", "208.67.222.222"],
+            "comment": "Primary server for test.example.com"
+        },
+        "b.b.b.b": {
+            "ping_targets": ["4.2.2.2", "76.76.10.0", "149.112.112.112", "208.67.220.220"],
+            "comment": "Backup server for test.example.com"
+        }
     }
 }
 ```
 - **`test.example.com`** is the monitored domain.
 - **`a.a.a.a`** and **`b.b.b.b`** are A records for the domain.
-- The script pings the associated IPs to determine their reachability.
+- Each A record includes:
+  - **`ping_targets`**: List of IPs that will be pinged to determine reachability.
+  - **`comment`**: Descriptive metadata for this record.
 
 ## Running the Script
 To start the script, run:
 ```bash
-python cloudflare-dns-monitor.py
+python cloudflare_dns_monitor.py
 ```
-
-### **Running on Reboot**
-
-#### **On Windows (Task Scheduler)**
-1. Open **Task Scheduler** (`Win + R`, type `taskschd.msc`, press Enter).
-2. Click **Create Basic Task**.
-3. Select **When the computer starts**.
-4. Select **Start a program**, then browse for `python.exe`.
-5. In the **Add arguments** field, enter:
-   ```
-   "C:\Path\To\cloudflare-dns-monitor.py"
-   ```
-6. Click **Finish**.
-
-#### **On Linux (Systemd Service)**
-1. Create a new systemd service:
-   ```bash
-   sudo nano /etc/systemd/system/cloudflare-monitor.service
-   ```
-2. Add the following content:
-   ```ini
-   [Unit]
-   Description=Cloudflare DNS Monitor
-   After=network.target
-
-   [Service]
-   ExecStart=/usr/bin/python3 /path/to/cloudflare-dns-monitor.py
-   Restart=always
-   User=yourusername
-
-   [Install]
-   WantedBy=multi-user.target
-   ```
-3. Enable the service:
-   ```bash
-   sudo systemctl enable cloudflare-monitor
-   sudo systemctl start cloudflare-monitor
-   ```
 
 ## Logging Levels
 You can adjust the logging level in `config.json` under the `logging` section:
@@ -139,15 +118,6 @@ You can adjust the logging level in `config.json` under the `logging` section:
     "level": "DEBUG"
 }
 ```
-
-### **Logging Breakdown**
-| Level     | Description |
-|-----------|-------------|
-| `DEBUG`   | Full details, including API responses and ping results. |
-| `INFO`    | Standard monitoring logs, including successful pings and DNS updates. |
-| `WARNING` | Logs when an IP reaches the failure threshold. |
-| `ERROR`   | Logs API failures and network errors. |
-| `CRITICAL` | Logs fatal issues preventing execution. |
 
 ## Example Logs
 ```
@@ -161,9 +131,6 @@ You can adjust the logging level in `config.json` under the `logging` section:
 - **Cloudflare API errors?** Ensure your `api_token` and `zone_id` are correct.
 - **Ping failures?** Check if the destination IPs are reachable manually using `ping`.
 - **Script not running?** Ensure it is running via Task Scheduler (Windows) or `systemctl` (Linux).
-
-## Contributing
-Feel free to open an issue or submit a pull request for improvements.
 
 ## License
 MIT License. Free to use and modify.
