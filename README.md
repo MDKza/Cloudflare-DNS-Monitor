@@ -91,7 +91,7 @@ This section defines which DNS entries should be monitored and which IPs they sh
 ## Running the Script
 To start the script, run:
 ```bash
-python cloudflare_monitor.py
+python cloudflare-dns-monitor.py
 ```
 
 ### **Running on Reboot**
@@ -103,7 +103,7 @@ python cloudflare_monitor.py
 4. Select **Start a program**, then browse for `python.exe`.
 5. In the **Add arguments** field, enter:
    ```
-   "C:\Path\To\cloudflare_monitor.py"
+   "C:\Path\To\cloudflare-dns-monitor.py"
    ```
 6. Click **Finish**.
 
@@ -119,7 +119,7 @@ python cloudflare_monitor.py
    After=network.target
 
    [Service]
-   ExecStart=/usr/bin/python3 /path/to/cloudflare_monitor.py
+   ExecStart=/usr/bin/python3 /path/to/cloudflare-dns-monitor.py
    Restart=always
    User=yourusername
 
